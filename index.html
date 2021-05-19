@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="sassy.css" rel="stylesheet"/>
+        <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    </head>
+    <body>
+        <div id="app">
+            <div v-if="isLogin">
+                <nav>
+                    <section class="navbar">
+                        <h1>Alex / Breadpudding Server</h1>
+                        <p>Welcome {{steamName}}!</p>
+                    </section>
+                </nav>
+                <section v-if="queued !== null" class="queuebar" v-on:click="toggleDisplayQueue()">
+                    <h3>Queued: {{timeFormat(queueTimed)}}</h3>
+                    <div class="queue-info" :style="{'margin-top': displayQueue ? '0' : '-500px'}">
+                        <p>{{queued.name}}</p>
+                        <p>{{playerCount}} / 20 players</p>
+                        <p>{{timeFormat(queueTimed)}}</p>
+                        <button v-on:click="removeQueue()">Unqueue</button>
+                    </div>
+                </section>
+                
+                <section v-if="!isLogin">
+                    <h5>Please login</h5>
+                    <form>
+                
+                    </form>
+                    <a>Create Steam Account</a>
+                </section>
+                <main>
+                    <section class="queues-container">
+                        <div v-for="queue in Object.keys(queues)" class="queue-card"
+                            :style="{'border': queues[queue].selected ? '#acfc69 1px solid' : 'none'}">
+                            <div v-on:mouseover="queueMouseOver(queue)" v-on:mouseout="queueMouseOut(queue)"
+                                v-on:click="queueSelected(queue)">
+                                <img :src="queues[queue].imgSrc" />
+                                <div class="overlay"
+                                    :style="{'opacity': queues[queue].isHover && !queues[queue].selected ? '0.3' : '0.6'}"
+                                    :class="queues[queue].selected ? 'flash-bg' : 'black-bg'"></div>
+                                <p
+                                    :style="queues[queue].selected ? {'color': 'var(--main-dark-color)', 'font-weight': 'bold'} : {'color': 'white', 'font-weight': 'normal'}">
+                                    {{queues[queue].name}}</p>
+                            </div>
+                        </div>
+                    </section>
+                </main>
+            </div>
+            <div v-else>
+                <div class="login-container">
+                    <h3>Breadpudding Server</h3>
+                        <button v-on:click="login()">Login with Steam OAuth</button>
+                    <a href="https://store.steampowered.com/join/" noreferrer target="_blank">Create Steam Account</a>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            var app = new Vue({
+                el: '#app',
+                data: {
+                    steamName: "Name",
+                    isLogin: false,
+                    queueInterval: null,
+                    queueTimed: 0,
+                    queued: null,
+                    playerCount: 1,
+                    displayQueue: false,
+                    queues: {
+                        capture: {
+                            name: "Capture The Flag",
+                            imgSrc: "./images/1.jpg",
+                            selected: false,
+                            isHover: false,
+                            time: 0,
+                        },
+                        capture1: {
+                            name: "DeathMatch",
+                            imgSrc: "./images/2.jpg",
+                            selected: false,
+                            isHover: false,
+                        },
+                        capture2: {
+                            name: "Free for All",
+                            imgSrc: "./images/3.jpg",
+                            selected: false,
+                            isHover: false,
+                        },
+                        capture3: {
+                            name: "Next Gamemode?",
+                            imgSrc: "./images/4.jpg",
+                            selected: false,
+                            isHover: false,
+                        },
+                        capture4: {
+                            name: "Sniper Only",
+                            imgSrc: "./images/5.jpg",
+                            selected: false,
+                            isHover: false,
+                        },
+                        capture5: {
+                            name: "King of Hill",
+                            imgSrc: "./images/6.jpg",
+                            selected: false,
+                            isHover: false,
+                        },
+                    }
+                },
+                methods: {
+                    queueSelected: function(key) {
+                        for (let i = 0; i < Object.keys(this.queues).length; i++) {
+                            this.queues[Object.keys(this.queues)[i]]["selected"] = false;
+                        }
+                        this.queues[key]["selected"] = true;
+                        this.queued = this.queues[key];
+                        this.queueTimed = 0;
+                        clearInterval(this.queueInterval);
+                        this.queueInterval = setInterval(this.incrementTime, 1000);
+                        this.displayQueue = false;
+                    },
+                    queueMouseOver: function(key) {
+                        this.queues[key]["isHover"] = true;
+                    },
+                    queueMouseOut: function (key) {
+                        this.queues[key]["isHover"] = false;
+                    },
+                    queueTime: function() {
+                        this.queued["time"] = new Date();
+                    },
+                    incrementTime: function() {
+                        this.queueTimed += 1;
+                    },
+                    timeFormat: function(seconds) {
+                        let time = [seconds, seconds];
+                        return time
+                            .map((t, i) => (Math.floor(t / Math.pow(60, i)) % 60).toString().padStart(2, '0'))
+                            .reverse()
+                            .join(":");
+                    },
+                    toggleDisplayQueue: function() {
+                        this.displayQueue = !this.displayQueue ;
+                    },
+                    removeQueue: function() {
+                        this.queued = null;
+                        clearInterval(this.queueInterval);
+                        this.queueTimed = 0;
+                        for (let i = 0; i < Object.keys(this.queues).length; i++) {
+                            this.queues[Object.keys(this.queues)[i]]["selected"] = false;
+                        }
+                    },
+                    login: function() {
+                        //login logic
+                        this.isLogin = true;
+                    }
+                }
+            })    
+        </script>
+    </body>
+</html>
